@@ -1,0 +1,20 @@
+{
+  "name": "depin-device-registry",
+  "version": "1.0.0",
+  "description": "A DePIN device registry DApp for BOT Chain (Chain ID 677)",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:local": "npx hardhat run scripts/deploy.js",
+    "deploy:botchain": "npx hardhat run scripts/deploy.js --network botchain",
+    "frontend": "cd frontend && npx serve -s build"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "hardhat": "^2.19.0",
+    "dotenv": "^16.3.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3"
+  }
+}
