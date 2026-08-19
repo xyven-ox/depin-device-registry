@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m "DePIN Device Registry - DApp for BOT Chain"
+git remote add origin https://github.com/YOUR_USERNAME/depin-device-registry.git
+git branch -M main
+git push -u origin main
