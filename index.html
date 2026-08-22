@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DePIN Device Registry — BOT Chain</title>
+  <style>
+    :root {
+      --bg: #080c14;
+      --card: #111827;
+      --border: #1f2937;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --blue: #3b82f6;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    .header h1 { font-size: 1.25rem; font-weight: 700; }
+    .header h1 span { color: var(--accent); }
+    .connect-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .connect-btn:hover { background: var(--accent-hover); }
+    .connect-btn.connected { background: var(--blue); }
+    .container { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem;
+    }
+    .stat-card .label { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .stat-card .value { font-size: 1.2rem; font-weight: 700; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .card h2 { font-size: 1.05rem; margin-bottom: 1rem; }
+    .form-group { margin-bottom: 0.85rem; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.85rem;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+    .btn {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-blue { background: var(--blue); color: white; }
+    .btn-blue:hover { background: #2563eb; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .device-list { margin-top: 0.5rem; }
+    .device-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
+      background: var(--bg);
+    }
+    .device-item .device-info { flex: 1; }
+    .device-item .device-id { font-weight: 600; font-size: 0.9rem; }
+    .device-item .device-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+    .status-badge {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+    .status-active { background: #064e3b; color: #34d399; }
+    .status-inactive { background: #1f2937; color: var(--muted); }
+    .status-suspended { background: #450a0a; color: #fca5a5; }
+    .submit-btn {
+      background: var(--purple);
+      color: white;
+      border: none;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-left: 0.5rem;
+    }
+    .submit-btn:hover { background: #7c3aed; }
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .network-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      background: var(--card); border: 1px solid var(--border); padding: 0.8rem 1.5rem;
+      border-radius: 10px; font-size: 0.9rem; display: none; z-index: 100;
+    }
+    .toast.show { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>DePIN</span> Device Registry</h1>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <div class="network-badge"><span class="dot"></span> BOT Chain Testnet</div>
+    <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Total Devices</div>
+      <div class="value" id="totalDevices">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Active Devices</div>
+      <div class="value" id="activeDevices">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Reward / Submit</div>
+      <div class="value" id="rewardRate">— BOT</div>
+    </div>
+  </div>
+
+  <!-- Register Device -->
+  <div class="card">
+    <h2>Register New Device</h2>
+    <div class="form-group">
+      <label>Device ID (serial number or unique ID)</label>
+      <input type="text" id="deviceId" placeholder="e.g. SENSOR-NYC-001" />
+    </div>
+    <div class="form-group">
+      <label>Device Type</label>
+      <select id="deviceType">
+        <option value="0">Sensor</option>
+        <option value="1">Compute</option>
+        <option value="2">Storage</option>
+        <option value="3">Network</option>
+        <option value="4">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Metadata (JSON — model, location, specs)</label>
+      <textarea id="deviceMetadata" placeholder='{"model": "TempSensor-v2", "location": "40.7,-74.0", "capabilities": ["temp","humidity"]}'></textarea>
+    </div>
+    <button class="btn btn-primary" id="registerBtn" onclick="registerDevice()" disabled>
+      Register Device (0.1 BOT)
+    </button>
+  </div>
+
+  <!-- My Devices -->
+  <div class="card">
+    <h2>My Devices</h2>
+    <div class="device-list" id="deviceList">
+      <div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.9rem;">Connect wallet to see your devices</div>
+    </div>
+  </div>
+
+  <div class="status" id="status" style="text-align:center;padding:1rem;color:var(--muted);font-size:0.85rem;">
+    Connect your wallet to get started
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ──── CONTRACT CONFIG ────
+  const CONTRACT_ADDRESS = "0xA9B022FC6D168B9621A4b57DE500834f38Ac45e3"; // Testnet deployment
+
+  // ⚠️ Currently set to TESTNET. Before deploying to mainnet, change to:
+  // chainId: "0x2A5", chainName: "BOT Chain", rpcUrls: ["https://rpc.botchain.ai"], blockExplorerUrls: ["https://scan.botchain.ai"]
+  // ...and update CONTRACT_ADDRESS to your mainnet deployment address.
+  const BOT_CHAIN = {
+    chainId: "0x3C8",
+    chainName: "BOT Chain Testnet",
+    rpcUrls: ["https://rpc.bohr.life"],
+    nativeCurrency: { name: "BOT", symbol: "BOT", decimals: 18 },
+    blockExplorerUrls: ["https://scan.bohr.life"],
+  };
+
+  const ABI = [
+    "function registerDevice(string,string,uint8) payable",
+    "function updateDevice(uint256,string)",
+    "function deactivateDevice(uint256)",
+    "function reactivateDevice(uint256)",
+    "function submitData(uint256,bytes32)",
+    "function getOwnerDevices(address) view returns (uint256[])",
+    "function getDevice(uint256) view returns (address,string,string,uint8,uint8,uint256,uint256,uint256,uint256)",
+    "function getDeviceCount() view returns (uint256)",
+    "function totalDevices() view returns (uint256)",
+    "function totalActiveDevices() view returns (uint256)",
+    "function registrationFee() view returns (uint256)",
+    "function rewardPerSubmission() view returns (uint256)",
+    "function isDeviceStale(uint256) view returns (bool)",
+    "event DeviceRegistered(uint256 indexed index, address indexed owner, string deviceId, uint8 deviceType)",
+    "event DataSubmitted(uint256 indexed deviceIndex, bytes32 dataHash, uint256 reward)"
+  ];
+
+  const DEVICE_TYPES = ["Sensor", "Compute", "Storage", "Network", "Other"];
+  const STATUS_NAMES = ["Inactive", "Active", "Suspended"];
+  const STATUS_CLASSES = ["status-inactive", "status-active", "status-suspended"];
+
+  let provider, signer, contract, userAddress;
+
+  async function connectWallet() {
+    if (!window.ethereum) { showToast("Please install MetaMask!"); return; }
+    try {
+      await switchToBotChain();
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      userAddress = await signer.getAddress();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+      document.getElementById("connectBtn").textContent = userAddress.slice(0, 6) + "..." + userAddress.slice(-4);
+      document.getElementById("connectBtn").classList.add("connected");
+      document.getElementById("registerBtn").disabled = false;
+
+      await refreshData();
+      setInterval(refreshData, 15000);
+      showToast("Connected to BOT Chain");
+    } catch (e) {
+      showToast("Connection failed: " + e.message);
+    }
+  }
+
+  async function switchToBotChain() {
+    try {
+      await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: BOT_CHAIN.chainId }] });
+    } catch (e) {
+      if (e.code === 4902) {
+        await window.ethereum.request({ method: "wallet_addEthereumChain", params: [BOT_CHAIN] });
+      }
+    }
+  }
+
+  async function refreshData() {
+    try {
+      const total = await contract.totalDevices();
+      const active = await contract.totalActiveDevices();
+      const reward = await contract.rewardPerSubmission();
+
+      document.getElementById("totalDevices").textContent = total.toString();
+      document.getElementById("activeDevices").textContent = active.toString();
+      document.getElementById("rewardRate").textContent = parseFloat(ethers.formatEther(reward)).toFixed(4) + " BOT";
+
+      // Load user's devices
+      const deviceIndices = await contract.getOwnerDevices(userAddress);
+      const listEl = document.getElementById("deviceList");
+
+      if (deviceIndices.length === 0) {
+        listEl.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:0.9rem;">No devices registered yet</div>';
+        return;
+      }
+
+      let html = "";
+      for (const idx of deviceIndices) {
+        const d = await contract.getDevice(idx);
+        const stale = await contract.isDeviceStale(idx);
+        html += `
+          <div class="device-item">
+            <div class="device-info">
+              <div class="device-id">${d[1]} <span class="status-badge ${STATUS_CLASSES[d[4]]}">${STATUS_NAMES[d[4]]}</span>${stale ? ' <span style="color:var(--danger);font-size:0.72rem;">STALE</span>' : ''}</div>
+              <div class="device-meta">${DEVICE_TYPES[d[3]]} · ${d[7].toString()} submissions · ${parseFloat(ethers.formatEther(d[8])).toFixed(4)} BOT earned</div>
+            </div>
+            <button class="submit-btn" onclick="submitData(${idx})" ${d[4] != 1 ? 'disabled style="opacity:0.4"' : ''}>Submit Data</button>
+          </div>
+        `;
+      }
+      listEl.innerHTML = html;
+
+      document.getElementById("status").textContent = "Last updated: " + new Date().toLocaleTimeString();
+    } catch (e) {
+      console.error("Refresh error:", e);
+    }
+  }
+
+  async function registerDevice() {
+    const deviceId = document.getElementById("deviceId").value.trim();
+    const deviceType = parseInt(document.getElementById("deviceType").value);
+    const metadata = document.getElementById("deviceMetadata").value.trim() || "{}";
+
+    if (!deviceId) { showToast("Device ID is required"); return; }
+
+    try {
+      document.getElementById("registerBtn").disabled = true;
+      const fee = await contract.registrationFee();
+      const tx = await contract.registerDevice(deviceId, metadata, deviceType, { value: fee });
+      showToast("Registering device...");
+      await tx.wait();
+      showToast("Device registered successfully!");
+      document.getElementById("deviceId").value = "";
+      document.getElementById("deviceMetadata").value = "";
+      await refreshData();
+    } catch (e) {
+      showToast("Registration failed: " + (e.reason || e.message));
+    }
+    document.getElementById("registerBtn").disabled = false;
+  }
+
+  async function submitData(deviceIndex) {
+    try {
+      // Simulate a data submission — in production, this would hash real sensor data
+      const sampleData = `reading:${Math.random().toFixed(6)},ts:${Date.now()}`;
+      const dataHash = ethers.keccak256(ethers.toUtf8Bytes(sampleData));
+
+      const tx = await contract.submitData(deviceIndex, dataHash);
+      showToast("Submitting data proof...");
+      await tx.wait();
+      showToast("Data submitted! Reward received.");
+      await refreshData();
+    } catch (e) {
+      showToast("Submission failed: " + (e.reason || e.message));
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  if (window.ethereum) {
+    window.ethereum.on("accountsChanged", () => location.reload());
+    window.ethereum.on("chainChanged", () => location.reload());
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.9.0/ethers.umd.min.js"></script>
+</body>
+</html>
