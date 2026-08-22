@@ -156,7 +156,7 @@
 <div class="header">
   <h1><span>DePIN</span> Device Registry</h1>
   <div style="display:flex;align-items:center;gap:1rem;">
-    <div class="network-badge"><span class="dot"></span> BOT Chain</div>
+    <div class="network-badge"><span class="dot"></span> BOT Chain Testnet</div>
     <button class="connect-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
   </div>
 </div>
@@ -220,13 +220,17 @@
 
 <script>
   // ──── CONTRACT CONFIG ────
-  const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Replace after deployment
+  const CONTRACT_ADDRESS = "0xA9B022FC6D168B9621A4b57DE500834f38Ac45e3"; // Testnet deployment
+
+  // ⚠️ Currently set to TESTNET. Before deploying to mainnet, change to:
+  // chainId: "0x2A5", chainName: "BOT Chain", rpcUrls: ["https://rpc.botchain.ai"], blockExplorerUrls: ["https://scan.botchain.ai"]
+  // ...and update CONTRACT_ADDRESS to your mainnet deployment address.
   const BOT_CHAIN = {
-    chainId: "0x2A5",
-    chainName: "BOT Chain",
-    rpcUrls: ["https://rpc.botchain.ai"],
+    chainId: "0x3C8",
+    chainName: "BOT Chain Testnet",
+    rpcUrls: ["https://rpc.bohr.life"],
     nativeCurrency: { name: "BOT", symbol: "BOT", decimals: 18 },
-    blockExplorerUrls: ["https://scan.botchain.ai"],
+    blockExplorerUrls: ["https://scan.bohr.life"],
   };
 
   const ABI = [
